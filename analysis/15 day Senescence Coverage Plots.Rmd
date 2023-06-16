@@ -1,0 +1,181 @@
+---
+title: "ChIP peak annotation"
+author: "Joanna Yeung"
+date: "30/08/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+require("knitr")
+opts_knit$set(root.dir = "C:/Users/Joanna Yeung/Box Sync/Risca Laboratory/Users/Joanna/Work_In_Progress/LSA6 (ChIP experiments from rotation (11-2019)/ChIPmentation/ChIP-15 dayNarrowpeaks_default MACS2/")
+
+library(ChIPseeker)
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+library(stringr)
+```
+# 15 day senescence ChIPmentation samples 
+
+```{r}
+setwd("C:/Users/Joanna Yeung/Box Sync/Risca Laboratory/Users/Joanna/Work_In_Progress/LSA6 (ChIP experiments from rotation (11-2019)/ChIPmentation/ChIP-15 dayNarrowpeaks_default MACS2/")
+Bedfiles <- dir()
+Bedfiles <- grep(".bed", Bedfiles, value=T)
+
+# had to do this because connection wouldn't open for the 4th and 8th file name in Bedfiles. Don't know why. 
+Bedfiles <- Bedfiles[-c(4,8)]
+
+# read bed files using readPeakFile function from ChIPseeker package
+bedpeakfiles <- c()
+for(i in 1:length(Bedfiles)){
+  bedpeakfiles[[i]] <- readPeakFile(Bedfiles[i])
+}
+
+# name the Peak Files by removing all that extra text that is the same for each sample. 
+names(bedpeakfiles) <- str_replace(Bedfiles, "_S1[0-9][0-9]_001.trim.st.all.blft.qft.rmdup.atac.bam_summits.bed", "")
+
+# create coverage plots 
+bedcoveragePlots <- c()
+for(i in 1: length(bedpeakfiles)){
+  bedcoveragePlots[[i]] <- covplot(bedpeakfiles[[i]], weightCol = "V5", title=paste(names(bedpeakfiles)[i], "Summits Bed over Chromosomes"))
+}
+
+bedcoveragePlots
+```
+
+```{r}
+setwd("C:/Users/Joanna Yeung/Box Sync/Risca Laboratory/Users/Joanna/Work_In_Progress/LSA6 (ChIP experiments from rotation (11-2019)/ChIPmentation/ChIP-15 dayNarrowpeaks_default MACS2/")
+narrowPeakfiles <- dir()
+narrowPeakfiles <- grep(".narrowPeak", narrowPeakfiles, value=T)
+narrowPeakfiles <- narrowPeakfiles[-c(4,8)]
+# read bed files using readPeakFile function from ChIPseeker package
+readnarrowPeakDFs <- lapply(narrowPeakfiles, read.delim, header=F)
+
+narrowPeakGRs <- c()
+for(i in 1:length(readnarrowPeakDFs)){
+  temp=readnarrowPeakDFs[[i]]
+  narrowPeakGRs <- c(narrowPeakGRs, GRanges(seqnames=temp[, 1], IRanges(temp[, 2], temp[, 3])))
+}
+
+# name the Peak Files by removing all that extra text that is the same for each sample. 
+names(narrowPeakGRs) <- str_replace(narrowPeakfiles, "_S1[0-9][0-9]_001.trim.st.all.blft.qft.rmdup.atac.bam_peaks.narrowPeak", "")
+
+# create coverage plots 
+narrowPeakcoveragePlots <- c()
+for(i in 1: length(narrowPeakGRs)){
+narrowPeakcoveragePlots[[i]] <- covplot(narrowPeakGRs[[i]], title=paste(names(narrowPeakGRs)[i], "Narrow Peaks over Chromosomes"))
+}
+
+narrowPeakcoveragePlots
+```
+```{r}
+setwd("C:/Users/Joanna Yeung/Box Sync/Risca Laboratory/Users/Joanna/Work_In_Progress/LSA6 (ChIP experiments from rotation (11-2019)/ChIPmentation/ChIP-15 dayBroadpeaks_default MACS2")
+broadPeakfiles <- dir()
+broadPeakfiles <- grep(".broadPeak", broadPeakfiles, value=T)
+broadPeakfiles <- broadPeakfiles[-c(4,8)]
+                                 
+# read bed files using readPeakFile function from ChIPseeker package
+readbroadPeakDFs <- lapply(broadPeakfiles, read.delim, header=F)
+
+broadPeakGRs <- c()
+for(i in 1:length(readbroadPeakDFs)){
+  temp=readbroadPeakDFs[[i]]
+  broadPeakGRs <- c(broadPeakGRs, GRanges(seqnames=temp[, 1], IRanges(temp[, 2], temp[, 3])))
+}
+
+# name the Peak Files by removing all that extra text that is the same for each sample. 
+names(broadPeakGRs) <- str_replace(broadPeakfiles, "_S1[0-9][0-9]_001.trim.st.all.blft.qft.rmdup.atac.bam_peaks.broadPeak", "")
+
+# create coverage plots 
+broadPeakcoveragePlots <- c()
+for(i in 1: length(broadPeakGRs)){
+broadPeakcoveragePlots[[i]] <- covplot(broadPeakGRs[[i]], title=paste(names(broadPeakGRs)[i], "Broad Peaks over Chromosomes"))
+}
+
+broadPeakcoveragePlots
+```
+
+# *15 day senescence CUT & RUN SAMPLES*
+
+```{r}
+setwd("C:/Users/Joanna Yeung/Box Sync/Risca Laboratory/Users/Joanna/Work_In_Progress/LSA6 (ChIP experiments from rotation (11-2019)/CUT & RUN/Peak files/15 day senescence")
+CnRFiles <- dir()
+CnRBroadFiles <- c()
+CnRNarrowFiles <- c()
+CnRbedfiles <- c()
+for(i in CnRfiles){
+CnRBroadFiles <- grep(".broadPeak", CnRFiles, value=T)
+CnRNarrowFiles <- grep(".narrowPeak", CnRFiles, value=T)
+CnRbedfiles <- grep(".bed", CnRFiles, value=T)
+}
+                                 
+# read bed files using readPeakFile function from ChIPseeker package
+CnRPeakDFs <- lapply(c(CnRBroadFiles, CnRNarrowFiles), read.delim, header=F)
+CnRPeakGRs <- c()
+CnRPeakGRs
+for(i in 1:length(CnRPeakDFs)){
+  temp=CnRPeakDFs[[i]]
+  CnRPeakGRs <- c(CnRPeakGRs, GRanges(seqnames=temp[, 1], IRanges(temp[, 2], temp[, 3])))
+}
+
+# name the Peak Files by removing all that extra text that is the same for each sample. 
+names(CnRPeakGRs) <- str_replace(c(CnRBroadFiles, CnRNarrowFiles), "_S1[0-9][0-9]_001.trim.st.all.blft.qft.rmdup.bam_peaks.", "")
+
+# create coverage plots 
+CnRMACS2PeakPlots <- c()
+for(i in 1: length(CnRPeakGRs)){
+CnRMACS2PeakPlots[[i]] <- covplot(CnRPeakGRs[[i]], title=paste(names(CnRPeakGRs)[i], "over Chromosomes"))
+}
+
+CnRbedpeakfiles <- c()
+for(i in 1:length(CnRbedfiles)){
+  CnRbedpeakfiles[[i]] <- readPeakFile(CnRbedfiles[i])
+}
+
+# name the Peak Files by removing all that extra text that is the same for each sample. 
+names(CnRbedpeakfiles) <- str_replace(CnRbedfiles, "_S1[0-9][0-9]_001.trim.st.all.blft.qft.rmdup.atac.bam_summits.bed", "")
+
+# create coverage plots 
+CnRbedcoveragePlots <- c()
+for(i in 1: length(CnRbedpeakfiles)){
+  CnRbedcoveragePlots[[i]] <- covplot(CnRbedpeakfiles[[i]], weightCol = "V5", title=paste(names(CnRbedpeakfiles)[i], "Summits Bed over Chromosomes"))
+}
+
+# save all plots to pdf file
+
+plottopdf <- c(bedcoveragePlots, narrowPeakcoveragePlots, broadPeakcoveragePlots, CnRbedcoveragePlots, CnRMACS2PeakPlots)
+pdf("C:/Users/Joanna Yeung/Box Sync/Risca Laboratory/Users/Joanna/Work_In_Progress/LSA6 (ChIP experiments from rotation (11-2019)/ChIPmentation/15 day Senescence Coverage Plots.pdf", width=8, height=11)
+plottopdf
+dev.off()
+```
+
+```{r}
+setwd("C:/Users/Joanna Yeung/Box Sync/Risca Laboratory/Users/Joanna/Work_In_Progress/LSA6 (ChIP experiments from rotation (11-2019)/ChIPmentation/ChIP-15 day Bams")
+library(GenomicAlignments)
+Ch_15dH3K27me3_2BAM <- readGAlignments("ChIP-15H3K27me3-2_S118_001.trim.st.all.blft.qft.rmdup.atac.bam")
+```
+
+```{r}
+library(Gviz)
+library(rtracklayer)
+library(Rsamtools)
+genomeAxis <- GenomeAxisTrack(name="MyAxis")
+```
+
+```{r}
+setwd("C:/Users/Joanna Yeung/Box Sync/Risca Laboratory/Users/Joanna/Work_In_Progress/LSA6 (ChIP experiments from rotation (11-2019)/ChIPmentation/ChIP-15 day Bams")
+Ch_15dH3K27me3_2AT <- AlignmentsTrack("ChIP-15H3K27me3-2_S118_001.trim.st.all.blft.qft.rmdup.atac.bam")
+setwd("C:/Users/Joanna Yeung/Box Sync/Risca Laboratory/Users/Joanna/Work_In_Progress/LSA6 (ChIP experiments from rotation (11-2019)/ChIPmentation/ChIP-15 dayNarrowpeaks_default MACS2")
+Ch_15dH3K27me3_2DT <- DataTrack(Ch_15dH3K27me3_2BED, chromosome="chr12")
+```
+
+There is no peak called on HMGA2 region in ChIPmentation 15dH3K27me3_2 sample despite having pileup of reads 
+```{r}
+setwd("C:/Users/Joanna Yeung/Box Sync/Risca Laboratory/Users/Joanna/Work_In_Progress/LSA6 (ChIP experiments from rotation (11-2019)/ChIPmentation/ChIP-15 day Bams")
+plotTracks(c(genomeAxis, Ch_15dH3K27me3_2DT, Ch_15dH3K27me3_2AT), from=66267287, to=66289320, chromosome="chr12",main="Ch_15dH3K27me3_2 Bam File over HMGA2 gene on chr12")
+```
+
+ChIP-15H3K27me3-1 & ChIP-15dInput Samples have no peaks (bed files are 0KB)
+
+
+
+
+

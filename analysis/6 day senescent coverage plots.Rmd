@@ -1,0 +1,86 @@
+---
+title: "6 day Senescence Coverage Plots"
+author: "Joanna Yeung"
+date: "31/08/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require("knitr")
+opts_knit$set(root.dir = "C:/Users/Joanna Yeung/Box Sync/Risca Laboratory/Users/Joanna/Work_In_Progress/LSA6 (ChIP experiments from rotation (11-2019)/CUT & RUN/Peak files/6 day senescence")
+library(ChIPseeker)
+```
+```{r}
+dir()
+```
+
+```{r}
+bedH3K27ac_1 <- c("CnR-6d-H3K27ac-1_S133_001.trim.st.all.blft.qft.rmdup.bam_summits.bed", "CnR-6d-H3K27ac-2_S134_001.trim.st.all.blft.qft.rmdup.bam_summits.bed")
+bedpeakfiles <- c()
+for(i in 1:length(bedH3K27ac_1)){
+  bedpeakfiles[[i]] <- readPeakFile(bedH3K27ac_1[i])
+}
+names(bedpeakfiles) <- c("CnR-6d-H3K27ac-1 Summits Bed", "CnR-6d-H3K27ac-2 Summits Bed")
+```
+```{r}
+bedcoveragePlots <- c()
+for(i in 1: length(bedpeakfiles)){
+  bedcoveragePlots[[i]] <- covplot(bedpeakfiles[[i]], weightCol = "V5", title=paste(names(bedpeakfiles)[i], "over Chromosomes"))
+}
+```
+
+# CnR 6day H3K27ac replicate 1 & 2 peak summits bed 
+```{r}
+bedcoveragePlots
+```
+
+```{r}
+PeakFilesH3K27ac <- c("CnR-6d-H3K27ac-1_S133_001.trim.st.all.blft.qft.rmdup.bam_peaks.narrowPeak", "CnR-6d-H3K27ac-1_S133_001.trim.st.all.blft.qft.rmdup.bam_peaks.broadPeak" , "CnR-6d-H3K27ac-2_S134_001.trim.st.all.blft.qft.rmdup.bam_peaks.narrowPeak",
+"CnR-6d-H3K27ac-2_S134_001.trim.st.all.blft.qft.rmdup.bam_peaks.broadPeak")
+macsPeaks_DFS <- lapply(PeakFilesH3K27ac, read.delim, comment.char = "#")
+#deconstruct peaks data frame into GRanges object
+macsPeaks_GRS <- c()
+for (i in c(1:length(macsPeaks_DFS))){
+  temp = macsPeaks_DFS[[i]]
+  #print(temp)
+  macsPeaks_GRS <- c(macsPeaks_GRS, (GRanges( seqnames=temp[,1], IRanges(temp[,2], temp[, 3]))))
+}
+```
+```{r}
+names(macsPeaks_GRS) <- c("CnR-6d-H3K27ac-1 narrowPeak", "CnR-6d-H3K27ac-1 broadPeak", "CnR-6d-H3K27ac-2 narrowPeak", "CnR-6d-H3K27ac-2 broadPeak")
+```
+```{r}
+coveragePlot <- c()
+for (i in 1:length(macsPeaks_GRS)){coveragePlot[[i]] <- covplot(macsPeaks_GRS[[i]], title = paste(names(macsPeaks_GRS)[i], "over Chromosomes"))}
+```
+
+# CnR 6day H3K27ac narrow peak and broad peak 
+```{r}
+coveragePlot
+```
+
+```{r}
+PeakFilesH3K27ac <- c("CnR-6d-H3K27ac-1_S133_001.trim.st.all.blft.qft.rmdup.bam_peaks.narrowPeak", "CnR-6d-H3K27ac-1_S133_001.trim.st.all.blft.qft.rmdup.bam_peaks.broadPeak" , "CnR-6d-H3K27ac-2_S134_001.trim.st.all.blft.qft.rmdup.bam_peaks.narrowPeak",
+"CnR-6d-H3K27ac-2_S134_001.trim.st.all.blft.qft.rmdup.bam_peaks.broadPeak")
+macsPeaks_DFS <- lapply(PeakFilesH3K27ac, read.delim, comment.char = "#")
+#deconstruct peaks data frame into GRanges object
+macsPeaks_GRS <- c()
+for (i in c(1:length(macsPeaks_DFS))){
+  temp = macsPeaks_DFS[[i]]
+  #print(temp)
+  macsPeaks_GRS <- c(macsPeaks_GRS, (GRanges( seqnames=temp[,1], IRanges(temp[,2], temp[, 3]))))
+}
+```
+```{r}
+names(macsPeaks_GRS) <- c("CnR-6d-H3K27ac-1 narrowPeak", "CnR-6d-H3K27ac-1 broadPeak", "CnR-6d-H3K27ac-2 narrowPeak", "CnR-6d-H3K27ac-2 broadPeak")
+```
+```{r}
+coveragePlot <- c()
+for (i in 1:length(macsPeaks_GRS)){coveragePlot[[i]] <- covplot(macsPeaks_GRS[[i]], title = paste(names(macsPeaks_GRS)[i], "over Chromosomes"))}
+```
+
+```{r}
+setwd("C:/Users/Joanna Yeung/Box Sync/Risca Laboratory/Users/Joanna/Work_In_Progress/LSA6 (ChIP experiments from rotation (11-2019)/ChIPmentation/ChIP-6 day Senescence Beds and Bigwigs")
+ChIP6d_H3K27ac_2_Bed <-readPeakFile("ChIP-6H3K27ac-2_S113_001.trim.st.all.blft.qft.rmdup.atac_summits.bed")
+covplot(ChIP6d_H3K27ac_2_Bed, weightCol="V5", title="ChIPmentation 6dH3K27ac-2 Summits Bed Coverage Over Chromosomes")
+```

@@ -1,0 +1,112 @@
+---
+title: "Cycling Cells Peak Coverage Plots"
+author: "Joanna Yeung"
+date: "10/2/2020"
+output: html_document
+---
+
+```{r}
+setwd("/rugpfs/fs0/risc_lab/scratch/jyeung/LSA6/Cycling Cells /CUT&RUN Peaks/")
+library(ChIPseeker)
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+library(stringr)
+CnRFiles <- dir()
+CnRBroadFiles <- c()
+CnRNarrowFiles <- c()
+CnRbedfiles <- c()
+for(i in CnRFiles){
+CnRBroadFiles <- grep(".broadPeak", CnRFiles, value=T)
+CnRNarrowFiles <- grep(".narrowPeak", CnRFiles, value=T)
+CnRbedfiles <- grep(".bed", CnRFiles, value=T)
+}
+                                 
+# read bed files using readPeakFile function from ChIPseeker package
+CnRPeakDFs <- lapply(c(CnRBroadFiles, CnRNarrowFiles), read.delim, header=F)
+CnRPeakGRs <- c()
+CnRPeakGRs
+for(i in 1:length(CnRPeakDFs)){
+  temp=CnRPeakDFs[[i]]
+  CnRPeakGRs <- c(CnRPeakGRs, GRanges(seqnames=temp[, 1], IRanges(temp[, 2], temp[, 3])))
+}
+
+# name the Peak Files by removing all that extra text that is the same for each sample. 
+names(CnRPeakGRs) <- str_replace(c(CnRBroadFiles, CnRNarrowFiles), "_S1[0-9][0-9]_001.trim.st.all.blft.qft.rmdup.bam_peaks.", "")
+
+# create coverage plots 
+CnRMACS2PeakPlots <- c()
+for(i in 1: length(CnRPeakGRs)){
+CnRMACS2PeakPlots[[i]] <- covplot(CnRPeakGRs[[i]], title=paste(names(CnRPeakGRs)[i], "over Chromosomes"))
+}
+
+CnRbedpeakfiles <- list()
+for(i in 1:length(CnRbedfiles)){
+  CnRbedpeakfiles[[i]] <- readPeakFile(CnRbedfiles[i])
+}
+
+# name the Peak Files by removing all that extra text that is the same for each sample. 
+names(CnRbedpeakfiles) <- str_replace(CnRbedfiles, "_S1[0-9][0-9]_001.trim.st.all.blft.qft.rmdup.atac.bam_summits.bed", "")
+
+# create coverage plots 
+CnRbedcoveragePlots <- c()
+for(i in 1: length(CnRbedpeakfiles)){
+  CnRbedcoveragePlots[[i]] <- covplot(CnRbedpeakfiles[[i]], weightCol = "V5", title=paste(names(CnRbedpeakfiles)[i], "Summits Bed over Chromosomes"))
+}
+
+```
+
+```{r}
+setwd("/rugpfs/fs0/risc_lab/scratch/jyeung/LSA6/Cycling Cells /ChIPmentation Peaks")
+ChIPFiles <- dir()
+ChIPBroadFiles <- c()
+ChIPNarrowFiles <- c()
+ChIPbedfiles <- c()
+for(i in ChIPFiles){
+ChIPBroadFiles <- grep(".broadPeak", ChIPFiles, value=T)
+ChIPBroadFiles <- ChIPBroadFiles[-3]
+ChIPNarrowFiles <- grep(".narrowPeak", ChIPFiles, value=T)
+ChIPNarrowFiles <- ChIPNarrowFiles[-3]
+ChIPbedfiles <- grep(".bed", ChIPFiles, value=T)
+ChIPbedfiles <- ChIPbedfiles[-3]
+}
+
+# read bed files using readPeakFile function from ChIPseeker package
+ChIPPeakDFs <- lapply(c(ChIPBroadFiles, ChIPNarrowFiles), read.delim)
+ChIPPeakGRs <- c()
+ChIPPeakGRs
+for(i in 1:length(ChIPPeakDFs)){
+  temp=ChIPPeakDFs[[i]]
+  ChIPPeakGRs <- c(ChIPPeakGRs, GRanges(seqnames=temp[, 1], IRanges(temp[, 2], temp[, 3])))
+}
+
+# name the Peak Files by removing all that extra text that is the same for each sample. 
+names(ChIPPeakGRs) <- str_replace(c(ChIPBroadFiles, ChIPNarrowFiles), "_S1[0-9][0-9]_001.trim.st.all.blft.qft.rmdup.bam_peaks.", "")
+
+# create coverage plots 
+ChIPMACS2PeakPlots <- c()
+for(i in 1: length(ChIPPeakGRs)){
+ChIPMACS2PeakPlots[[i]] <- covplot(ChIPPeakGRs[[i]], title=paste(names(ChIPPeakGRs)[i], "over Chromosomes"))
+}
+
+ChIPbedpeakfiles <- list()
+for(i in 1:length(ChIPbedfiles)){
+  ChIPbedpeakfiles[[i]] <- readPeakFile(ChIPbedfiles[i])
+}
+
+# name the Peak Files by removing all that extra text that is the same for each sample. 
+names(ChIPbedpeakfiles) <- str_replace(ChIPbedfiles, "_S1[0-9][0-9]_001.trim.st.all.blft.qft.rmdup.atac.bam_summits.bed", "")
+
+# create coverage plots 
+ChIPbedcoveragePlots <- c()
+for(i in 1: length(ChIPbedpeakfiles)){
+  ChIPbedcoveragePlots[[i]] <- covplot(ChIPbedpeakfiles[[i]], weightCol = "V5", title=paste(names(ChIPbedpeakfiles)[i], "Summits Bed over Chromosomes"))
+}
+```
+
+```{r}
+# save all plots to pdf file
+
+plottopdf <- c(CnRbedcoveragePlots, CnRMACS2PeakPlots, ChIPbedcoveragePlots, ChIPMACS2PeakPlots)
+pdf("/rugpfs/fs0/risc_lab/scratch/jyeung/LSA6/Quiescent Cells /Cycling Coverage Plots.pdf", width=8, height=11)
+plottopdf
+dev.off()
+```
